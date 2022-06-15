@@ -1,0 +1,91 @@
+\section{Derivation}
+
+Assuming our loss \(\Loss\) is a strictly convex quadratic function, i.e.
+\begin{align}
+	\label{eq: quadratic representation}
+	\Loss(\theta)
+	&= \Loss(w) + \langle\nabla\Loss(w), \theta-w\rangle
+	+ \tfrac12\langle \underbrace{\nabla^2\Loss(w)}_{=:H}(\theta- w), \theta -w\rangle\\
+	\nonumber
+	&=\Loss(\minimum) + \cancel{\langle\underbrace{\nabla\Loss(\minimum)}_{=0}, \theta -w \rangle}
+	+ \tfrac12\|\theta-\minimum\|_H^2
+\end{align}
+with
+\begin{align*}
+	\minimum &:= w-H^{-1}\nabla\Loss(w)\\
+	\|x\|_H^2 &:= \langle x, Hx\rangle.
+\end{align*}
+Then we have
+\begin{align}
+	\label{eq: gradient representation with hessian}
+	\nabla\Loss(\theta) = H(\theta - \minimum)
+\end{align}
+
+\subsection{Gradient Descent}
+
+The second derivative of \(\Loss\) in the direction of the gradient is
+\begin{align*}
+	H_{\nabla\Loss(w)} = \langle
+		H \tfrac{\nabla\Loss(w)}{\|\nabla\Loss(w)\|},
+		\tfrac{\nabla\Loss(w)}{\|\nabla\Loss(w)\|}
+	\rangle
+\end{align*}
+So we have
+\begin{align}
+	\nonumber
+	\Loss(w - \lr \nabla\Loss(w))
+	\overset{\eqref{eq: quadratic representation}}&=
+	\Loss(w) - \lr\|\nabla\Loss(w)\|^2
+	+ \frac{\lr^2}2\langle H \nabla \Loss(w), \nabla\Loss(w)\rangle
+	\\
+	\label{eq: explicit gradient descent}
+	&= \Loss(w) - \lr\left(1-\lr\frac{H_{\nabla\Loss(w)}}2\right)\|\nabla\Loss(w)\|^2
+\end{align}
+Minimizing this expression over the learning rate, requires maximizing the
+quadratic polynomial in \(\lr\) in front of the gradient norm. This results
+in
+\begin{align*}
+	\lr^* = \frac{1}{H_{\nabla\Loss(w)}}.
+\end{align*}
+
+\subsection{Calculating the Directional Derivative}
+
+To calculate the directional derivative \(H_{\nabla\Loss(w)}\), we can simply
+reorder \eqref{eq: explicit gradient descent} to get
+\begin{align*}
+	H_{\nabla\Loss(w)}
+	&= \frac2\lr\left[
+		\frac{\Loss(w-\lr\nabla\Loss(w))-\Loss(w)}{\lr\|\nabla\Loss(w)\|^2} + 1
+	\right]\\
+	&= \frac2\lr\left[
+		\frac{\Loss(w-\lr\nabla\Loss(w))-\Loss(w) + \lr\|\nabla\Loss(w)\|^2}{\lr\|\nabla\Loss(w)\|^2}
+	\right].
+\end{align*}
+This is pretty much just a finite difference approximation of the directional
+derivative.
+We therefore have for any initial \(\lr\)
+\begin{align*}
+	\lr^* = \frac{
+		\lr^2 \|\nabla\Loss(w)\|^2
+	}{2[\Loss(w-\lr\nabla\Loss(w))-\Loss(w) +\lr\|\nabla\Loss(w)\|^2]}
+\end{align*}
+Specific selections of \(\lr\) might be preferable for numeric (or stochastic)
+reasons, if this is implemented (used for SGD).
+
+\subsection{Comparison with Backtracking}
+
+In backtracking, you try a learning rate, and reduce the learning rate afterwards
+incrementally until the armijo condition
+\begin{align*}
+	\Loss(w-\lr\nabla\Loss(w)) -\Loss(w) \le - \frac{\lr}2 \|\nabla\Loss(w)\|^2
+\end{align*}
+is satisfied. If we plug \(\lr^*\) into \eqref{eq: explicit gradient descent},
+we get this inequality as an equality. Therefore \(\lr^*\) is the largest
+learning rate, for which the armijo condition holds. Backtracking will therefore
+approximately result in \(\lr^*\). Instead of trial and error we can also do
+just two steps: One with an arbitrary \(\lr\), and then calculate \(\lr^*\) from
+that. This is \(O(2)\) instead of \(O(\log(\lr - \lr^*))\) which is the
+cost of the armijo rule.
+
+But more importantly the finite difference approximation of \(\lr^*\) might
+be approximated in a SGD setting.

@@ -1,21 +1,20 @@
-# article-template
+# Shortcircuit Backtracking
 
-LaTeX template for an article
+## Abstract
 
-## GitHub Actions
+Backtracking e.g. using the Armijo Rule requires knowledge
+about the progress made. This is not the case in SGD, where
+we do not know whether and how much progress we make. For quadratic Loss
+functions it is possible to calculate the learning rate resulting from
+backtracking. While backtracking fundamentally works like "wait unitl...'',
+calculations can be approximated, so they might be more useful in stochastic
+gradient settings.
 
-- Every Commit to a Branch with an Active Pull Request to `main` is tested (i.e.
-the GitHub action attempts to compile the pdf. The result is attached to the
-workflow run as an artifact)
-- Every Commit to the `main` branch, results in a Release. To make this release,
-the action tags the latest commit using the current date. For the Release title
-the first line of the commit message is used. For the Release body, the body
-of the commit message is used.
+## Note
 
-> If you merge with a `rebase`, the release mechanism does not work as well,
-since the last commit message won't be as meaningful. It is therefore advisable
-to either `squash` or `merge` pull requests.
+At the moment this only works for full gradient, quadratic loss functions and it
+only provides a `log` speedup over backtracking in this case.
 
-## ArXiv compatible
-
-The name of the main file is `ms.tex` as ArXiv suggests for the top file.
+Still necessary to be interesting
+- [ ] generalization beyond quadratic losses
+- [ ] generalization to SGD

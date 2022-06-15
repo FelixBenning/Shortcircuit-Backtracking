@@ -1,0 +1,126 @@
+\section{Convergence}
+
+The convergence results are nothing unusal for gradient descent, but we present
+them for completeness sake.
+
+First notice that
+\begin{align*}
+	H_{\nabla\Loss(w)}
+	= \left\|\frac{\nabla\Loss(w)}{\|\nabla\Loss(w)\|}\right\|_H^2
+	= \frac{\|\nabla\Loss(w)\|_H^2}{\|\nabla\Loss(w)\|^2}.
+\end{align*}
+Plugging \(\lr^*\) into \eqref{eq: explicit gradient descent} and keeping in
+mind \eqref{eq: gradient representation with hessian}, we get
+\begin{align*}
+	\Loss(w-\lr^*\nabla\Loss(w)) - \Loss(w)
+	\overset{\eqref{eq: explicit gradient descent}}&=
+	 -\frac1{2H_{\nabla\Loss(w)}}\|\nabla\Loss(w)\|^2
+	\overset{\eqref{eq: gradient representation with hessian}}=
+	-\frac{\|H(w-\minimum)\|^4}{2\|H(w-\minimum)\|_H^2}\\
+	&= - \frac{
+		\left(\sum_{i=1}^\dimension \lambda_i^2\langle w-\minimum,v_i\rangle^2\right)^2
+	}{2\sum_{i=1}^\dimension \lambda_i^3 \langle w-\minimum, v_i\rangle^2},
+\end{align*}
+for sorted eigenvalues \(0<\lambda_1 \le \dots \le \lambda_d\) with
+orthonormal eigenvectors \(v_i\), i.e. \(Hv_i = \lambda_i v_i\) and
+\(\langle v_i, v_j\rangle = \delta_{ij}\). These exist because \(H\)
+is symmetric and strictly positive definite. We then get
+\begin{align*}
+	\|Hx\|^2 &= \left\langle
+		H \sum_{i=1}^\dimension \langle x, v_i\rangle v_i,
+		\sum_{j=1}^\dimension \langle x, v_j\rangle H v_j
+	\right\rangle
+	= \sum_{i,j=1}^\dimension \langle x, v_i\rangle\langle x, v_j\rangle \lambda_i\lambda_j\delta_{ij}
+	\\
+	&= \sum_{i=1}^\dimension \lambda_i^2 \langle x, v_i\rangle^2
+\end{align*}
+and similarly \(\|Hx\|_H^2 = \sum_{i=1}^\dimension \lambda_i^3 \langle x, v_i\rangle^2\).
+Using \(\lambda_i^3\le\lambda_\dimension\lambda_i^2\), we can move that
+single \(\lambda_\dimension\) outside and cancel the square in the enumerator
+to get
+\begin{align*}
+	\Loss(w-\lr^*\nabla\Loss(w)) - \Loss(w)
+	&\le - \frac{
+		\sum_{i=1}^\dimension \lambda_i^2\langle w-\minimum,v_i\rangle^2
+	}{2\lambda_\dimension}
+	= -\frac1{2\lambda_\dimension} \|H(w-\minimum\|^2)\\
+	&= -\frac1{2\lambda_\dimension} \|\nabla\Loss(w)\|^2.
+\end{align*}
+We have proven
+\begin{lemma}[Improvement Guarantee]\label{lem: improvement guarantee}
+	For a quadratic, strictly convex loss function \(\Loss\) with \(\lr^*=
+	\frac{1}{H_{\nabla\Loss(w)}}\), we get
+	\begin{align*}
+	\Loss(w-\lr^*\nabla\Loss(w)) - \Loss(w)
+	&\le -\frac1{2\lambda_\dimension} \|\nabla\Loss(w)\|^2.
+	\end{align*}	
+\end{lemma}
+\begin{remark}
+	This is a standard result for the learning rate \(\tilde{\lr}=1/\lambda_\dimension\).
+	Since \(\lambda_\dimension\) is the largest eigenvalue of \(H\), we certainly
+	have \(H_{\nabla\Loss(w)}\le \lambda_\dimension\) and therefore \(\lr^* \ge
+	\tilde{\lr}\). I.e. the learning rate \(\tilde{\lr}\) is more conservative
+	and not optimal with regard to \eqref{eq: explicit gradient descent}.
+\end{remark}
+
+From here it is not far to the final convergence result
+\begin{theorem}
+	If \(\Loss\) is a strictly convex, quadratic loss and we select
+	\begin{align*}
+		w_{n+1} = w_n - \lr^*(w_n)\nabla\Loss(w_n)
+	\end{align*}
+	with
+	\begin{align*}
+		\lr^*(w_n) = - \frac{1}{H_{\nabla\Loss(w_n)}},
+	\end{align*}
+	then for condition \(\kappa := \frac{\lambda_d}{\lambda_1}\), we have
+	\begin{align*}
+		\|w_{n+1}- \minimum\|^2 \le \kappa (1-\tfrac1\kappa)^{n+1}\|w_0 - \minimum\|^2.
+	\end{align*}
+\end{theorem}
+\begin{proof}
+	Before we begin convince yourself of
+	\begin{align}
+		\label{eq: H-norm conversion}
+		\|H^{\frac12}x\|^2
+		&= \langle H^{\frac12}x, H^{\frac12}x\rangle 
+		= \langle Hx, x\rangle
+		= \|x\|_H^2
+		\\
+		\label{eq: explicit op norm}
+		\|H^{-\frac12}\|_{\text{op}}
+		&= \frac1{\sqrt{\lambda_1}}
+		\\
+		\label{eq: inverse op norm inequality}
+		\|x\| &\ge \frac1{\|A^{-1}\|} \|Ax\|
+	\end{align}
+	We have
+	\begin{align*}
+		\|w_{n+1} - \minimum\|_H^2 - \|w_n-\minimum\|_H^2
+		\overset{\eqref{eq: quadratic representation}}&=
+		2[\Loss(w_{n+1}) - \Loss(w_n)]\\
+		\overset{\text{Lemma~\ref{lem: improvement guarantee}}}&\le
+		-\frac1{\lambda_\dimension}\|\nabla\Loss(w_n)\|^2\\
+		\overset{\eqref{eq: gradient representation with hessian}}&=
+		-\frac1{\lambda_\dimension}\underbrace{
+			\|H^{\frac12}H^{\frac12}(w_n-\minimum)\|^2
+		}_{
+			\overset{\eqref{eq: inverse op norm inequality}}\ge
+			\frac1{\big\|H^{-\frac12}\big\|_{\text{op}}}\|H^{\frac12}(w_n-\minimum)\|
+		}
+		\\
+		\overset{\eqref{eq: H-norm conversion},\eqref{eq: explicit op norm}}&\le
+		- \frac{\lambda_1}{\lambda_d} \|w_n -\minimum\|_H^2.
+	\end{align*}	
+	Using the definition of \(\kappa\) this implies
+	\begin{align*}
+		\|w_{n+1}-\minimum\|_H^2 \le \left(1-\frac1\kappa\right) \|w_n-\minimum\|_H^2
+		\overset{\text{ind.}}\le \left(1-\frac1\kappa\right)^{n+1}\|w_0-\minimum\|_H^2
+	\end{align*}
+	Finally using
+	\begin{align*}
+		\|x\|_H \overset{\eqref{eq: H-norm conversion}}&\le \sqrt{\lambda_\dimension}\|x\|\\
+		\|x\| \overset{\eqref{eq: explicit op norm}}&\le \sqrt{\lambda_1}\|x\|_H
+	\end{align*}
+	to convert the norms, yields the claim.
+\end{proof}
